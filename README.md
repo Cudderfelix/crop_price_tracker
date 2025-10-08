@@ -5,6 +5,11 @@
 # Languages & Frameworks utilized.
     * Python
     * Django Framework
+    * Sql Python connector
+
+# Dependencies Included
+    * sql python connector
+    * dotenv
 
 # Licenses
  * MIT License

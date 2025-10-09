@@ -10,6 +10,7 @@
 # Dependencies Included
     * sql python connector
     * dotenv
+    * Specialized Environment
 
 # Licenses
  * MIT License

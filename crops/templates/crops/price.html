@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+     <html>
+     <head>
+         <title>Crop Price Result</title>
+         <style>
+             body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+             .result { margin: 20px; padding: 10px; border: 1px solid #ccc; }
+         </style>
+     </head>
+     <body>
+         <h1>Crop Price for {{ crop }}</h1>
+         <div class="result">
+             <p><strong>Price Index:</strong> {{ value }}</p>
+             <p><strong>Unit:</strong> {{ unit }}</p>
+             <p><strong>Year:</strong> {{ year }}</p>
+             <p><strong>Month:</strong> {{ month }}</p>
+             <p><strong>Source:</strong> {{ source }}</p>
+         </div>
+         <a href="{% url 'home' %}">Back to Home</a>
+     </body>
+     </html>

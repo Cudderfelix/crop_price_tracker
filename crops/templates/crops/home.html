@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+     <html>
+     <head>
+         <title>Crop Price Tracker</title>
+         <style>
+             body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+             input { padding: 5px; margin: 10px; }
+             button { padding: 5px 10px; }
+         </style>
+     </head>
+     <body>
+         <h1>Crop Price Tracker</h1>
+         <form action="{% url 'crop_price' crop_name='wheat' %}" method="get">
+             <label for="crop">Enter Crop Name (e.g., wheat, maize, rice):</label>
+             <input type="text" id="crop" name="crop" required>
+             <button type="submit">Get Price</button>
+         </form>
+     </body>
+     </html>

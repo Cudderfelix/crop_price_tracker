@@ -82,6 +82,11 @@ DATABASES = {
 }
 
 
+#Auth settings
+LOGIN_REDIRECT_URL = '/' #Redirect to home page after login
+LOGOUT_REDIRECT_URL = '/' #Redirect to home page after logout
+LOGIN_URL = '/login/' #Redirect unauthenticated users to this login page
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 

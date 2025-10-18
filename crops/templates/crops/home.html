@@ -13,7 +13,7 @@
    <body>
        <div class="container">
            <h1 class="text-center mb-4">Crop Price Tracker</h1>
-           <form method="get" class="d-flex flex-column align-items-center">
+           <form method="get" action="{% url 'home'%}" class="d-flex flex-column align-items-center">
                <div class="mb-3 w-100">
                    <label for="crop" class="form-label">Select Crop</label>
                    <select id="crop" name="crop" class="form-select" required>

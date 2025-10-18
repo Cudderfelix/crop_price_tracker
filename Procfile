@@ -1,1 +1,1 @@
-web: gunicorn crop_price_tracker.wsgi --log-file -
+web: gunicorn crop_price_tracker.wsgi

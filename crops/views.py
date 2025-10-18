@@ -1,40 +1,52 @@
-from django.shortcuts import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import requests
 
 def home(request):
-    return HttpResponse("Hello, welcome to Cudderfelix Crop Tracker app!")
+    if request.method == 'GET' and 'crop' in request.GET:
+        crop_name = request.GET.get('crop').strip()
+        return redirect ('crop_price', crop_name=crop_name)
+    return render(request, 'crops/home.html')
 
 def crop_price(request, crop_name):
-    # Normalize crop name (e.g., 'wheat' -> FAO item code logic)
-    # Fordemo: Use FAO's food price index endpoint (simplified for wheat-like data)
-    url = "http://fenixservices.fao.org/faostat/api/v1/en/data/FPI"  # For Food Price Indez
-    params = {
-        'area': 1, # World
-        'item': 15 if crop_name.loweer() == 'wheat' else 56, # Wheat-15, Maize=56 (adjust as needed)
-        'year': 2024, # Current year
-        'limit': 10,
-        'offset': 0,
-        'dissemination_format': 'json'
-    }
-    
-    try:
-        response = requests.get(url, params=params)
-        response.raise_for_status() # Raise error for a bad server status
-        data = response.json()
+       # Map crop names to FAO item codes (simplified for demo)
+       crop_codes = {
+           'wheat': 15,
+           'maize': 56,
+           'rice': 27,
+       }
+       item_code = crop_codes.get(crop_name.lower(), None)
+       
+       if not item_code:
+           return render(request, 'crops/error.html', {'error': f'Crop "{crop_name}" not supported. Try wheat, maize, or rice.'})
 
-        # Simple parsing: Extract latest price/index
-        if data.get('data'):
-            latest = data['data'][-1] # Last entry
-            price_info = {
-                'crop': crop_name.capitalize(),
-                'value': latest.get('value', 'N/A'),
-                'unit': latest.get('Element', 'Index'), # Latest Price Index
-                'year': latest.get('Year', 'N/A'),
-                'source': 'FAO FAOSTAT'
-            }
-            return JsonResponse(price_info) # For now, return JSON; we'll add templates next
-        else:
-            return HttpResponse(f"No data found for {crop_name}.", status=404)
-    except requests.exceptions.RequestExxception as e:
-        return HttpResponse(f"API error: {str(e)}", status=500)
+       # FAO API request
+       url = "http://fenixservices.fao.org/faostat/api/v1/en/data/FPI"
+       params = {
+           'area': 1,  # World
+           'item': item_code,
+           'year': 2024,  # Latest year
+           'limit': 1,  # Latest record
+           'offset': 0,
+           'dissemination_format': 'json'
+       }
+
+       try:
+           response = requests.get(url, params=params)
+           response.raise_for_status()
+           data = response.json()
+           
+           if data.get('data'):
+               latest = data['data'][0]  # Latest entry
+               context = {
+                   'crop': crop_name.capitalize(),
+                   'value': latest.get('Value', 'N/A'),
+                   'unit': 'Price Index',  # FPI uses indices
+                   'year': latest.get('Year', 'N/A'),
+                   'month': latest.get('Month', 'N/A'),
+                   'source': 'FAO FAOSTAT'
+               }
+               return render(request, 'crops/price.html', context)
+           else:
+               return render(request, 'crops/error.html', {'error': f'No data found for {crop_name}.'})
+       except requests.exceptions.RequestException as e:
+           return render(request, 'crops/error.html', {'error': f'API error: {str(e)}'})

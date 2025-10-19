@@ -16,35 +16,6 @@
     * Dependencies: django-crispy-forms, crispy-bootstrap5, requests, dj-database-url, whitenoise
     * Deployment: Heroku
 
-# Project Structure
-crop_price_tracker/
-├── crops/
-│   ├── migrations/
-│   ├── templates/crops/
-│   │   ├── home.html
-│   │   ├── price.html
-│   │   ├── profile.html
-│   │   ├── login.html
-│   │   ├── signup.html
-│   ├── __init__.py
-│   ├── admin.py
-│   ├── apps.py
-│   ├── forms.py
-│   ├── models.py
-│   ├── tests.py
-│   ├── urls.py
-│   ├── views.py
-├── crop_price_tracker/
-│   ├── __init__.py
-│   ├── asgi.py
-│   ├── settings.py
-│   ├── urls.py
-│   ├── wsgi.py
-├── .env
-├── manage.py
-├── requirements.txt
-├── staticfiles/
-
 
 # Setup Instructions
 ## Prerequisites

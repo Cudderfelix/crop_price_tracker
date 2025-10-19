@@ -22,17 +22,18 @@ def crop_price(request, crop_name):
     
     # Map app commodities to API Ninjas symbols
     commodity_map = {
-        'wheat': 'wheat',
-        'maize': 'corn',
+        
         'rice': 'rough_rice',
         'soybeans': 'soybean_meal',
-        'sugar': 'sugar',
-        'coffee': 'coffee',
-        'cotton': 'cotton',
-        'barley': 'barley',
         'oats': 'oat',
         'feeder_cattle': 'feeder_cattle',
         'lumber': 'lumber',
+        'sugar': 'sugar',
+        'coffee': 'coffee',
+        'cotton': 'cotton',
+        'barley': 'barley', 
+        'wheat': 'wheat',
+        'maize': 'corn',
 
     }
     api_symbol = commodity_map.get(crop_name.lower(), None)

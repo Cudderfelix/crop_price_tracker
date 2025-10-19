@@ -32,20 +32,23 @@
             <div class="mb-3">
                 <label for="crop" class="form-label">Select Crop</label>
                 <select name="crop" id="crop" class="form-select">
-                    <option value="wheat">Wheat</option>
-                    <option value="maize">Maize</option>
                     <option value="rice">Rice</option>
                     <option value="soybeans">Soybeans</option>
+                    <option value="oats">Oats</option>
+                    <option value="feeder_cattle">Feeder_Cattle</option>
+                    <option value="lumber">Lumber</option>
                     <option value="sugar">Sugar</option>
                     <option value="coffee">Coffee</option>
                     <option value="cotton">Cotton</option>
                     <option value="barley">Barley</option>
-                    <option value="oats">Oats</option>
-                    <option value="feeder_cattle">Feeder_Cattle</option>
-                    <option value="lumber">Lumber</option>
+                    <option value="wheat">Wheat</option>
+                    <option value="maize">Maize</option>  
                 </select>
             </div>
-            <button type="submit" class="btn btn-primary">Check Price</button>
+            <div class="d-flex justify-content-center">
+                 <button type="submit" class="btn btn-primary">Check Price</button>
+            </div>
+           
         </form>
         {% if messages %}
             {% for message in messages %}

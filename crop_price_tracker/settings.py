@@ -12,8 +12,14 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+import dj_database_url
+from dotenv import load_dotenv  
+
+load_dotenv()  # Load environment variables from .env file
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -24,7 +30,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-@syi*0=n32%-0tq(_-bn9f12$g-t%ffx7*ao3h9lo*z6jk0e3o'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False # I'm setting it to False for production readiness
+DEBUG = True # I'm setting it to False for production readiness
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '*.herokuapp.com', 'crop-price-tracker', 'crop-price-tracker-410438b977b9.herokuapp.com',]
 
@@ -38,8 +44,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'crispy_forms',
+    'crispy_bootstrap5',
     'crops',
 ]
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -73,13 +84,22 @@ WSGI_APPLICATION = 'crop_price_tracker.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-DATABASES = {
+if 'DATABASE_URL' in os.environ:
+        DATABASES = {'default': dj_database_url.config(conn_max_age=600)}
+else:
+    DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+
+#Auth settings
+LOGIN_REDIRECT_URL = '/' #Redirect to home page after login
+LOGOUT_REDIRECT_URL = '/' #Redirect to home page after logout
+LOGIN_URL = '/login/' #Redirect unauthenticated users to this login page
+
 
 
 # Password validation
@@ -98,7 +118,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
-]
+    ]
 
 
 # Internationalization

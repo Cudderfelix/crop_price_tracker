@@ -1,11 +1,11 @@
+{% load crispy_forms_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ crop }} Price - Crop Price Tracker</title>
+    <title>Login - Crop Price Tracker</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <style> body { padding-top: 70px; } .container { max-width: 600px; } </style>
 </head>
 <body>
@@ -28,42 +28,13 @@
         </div>
     </nav>
     <div class="container">
-        <h1 class="text-center mb-4">{{ crop }} Price</h1>
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">{{ crop }}</h5>
-                <p class="card-text">Price: ${{ value }} {{ unit }}</p>
-                <p class="card-text">Date: {{ display_year }}</p>
-                <p class="card-text">Source: {{ source }}</p>
-            </div>
-        </div>
-        {% if chart_labels %}
-        <canvas id="priceChart" width="400" height="200"></canvas>
-        <script>
-            const ctx = document.getElementById('priceChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: {{ chart_labels|safe }},
-                    datasets: [{
-                        label: '{{ crop }} Price (USD)',
-                        data: {{ chart_prices|safe }},
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        fill: false
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: { beginAtZero: false }
-                    }
-                }
-            });
-        </script>
-        {% endif %}
-         <div class="d-flex justify-content-center">
-             <a href="{% url 'home' %}" class="btn btn-secondary mt-3">Back to Home</a>
-                 
-        </div>
+        <h1 class="text-center mb-4">Login</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+        <p class="mt-3">Don't have an account? <a href="{% url 'signup' %}">Sign Up</a></p>
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} mt-3">{{ message }}</div>

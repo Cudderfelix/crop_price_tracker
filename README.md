@@ -1,6 +1,6 @@
 # Crop Price Tracker
 
-   ## Crop Price Tracker is a Django-based web application that allows users to track real-time and historical commodity prices for crops like wheat, maize, rice, soybeans, sugar, coffee, cotton, barley, and oats. Users can sign up, log in, manage favorite crops in their profile, and view price data with historical charts. The app integrates with the API Ninjas Commodity Price API for live data and uses mock data for historical trends. It is deployed on Heroku at crop-price-tracker-410438b977b9.herokuapp.com.
+   Crop Price Tracker is a Django-based web application that allows users to track real-time and historical commodity prices for crops like wheat, maize, rice, soybeans, sugar, coffee, cotton, barley, and oats. Users can sign up, log in, manage favorite crops in their profile, and view price data with historical charts. The app integrates with the API Ninjas Commodity Price API for live data and uses mock data for historical trends. It is deployed on Heroku at crop-price-tracker-410438b977b9.herokuapp.com.
 
 # Features
   * User Authentication: Sign up, login, and logout with POST-based forms.

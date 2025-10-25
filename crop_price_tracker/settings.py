@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'crops',
+    'rest_framework',
+    'drf_spectacular',
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"

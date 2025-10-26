@@ -1,12 +1,12 @@
 from django.urls import path
 from . import views
-from django.contrib.auth import views as auth_views
+import os
 
 urlpatterns = [
-    path('', views.home, name='home'),
-    path('signup/', views.signup, name='signup'),
-    path('login/', views.CustomLoginView.as_view(), name='login'),
-    path('logout/', views.CustomLogoutView.as_view(), name='logout'),
-    path('crop/<str:crop_name>/', views.crop_price, name='crop_price'),
-    path('profile/', views.profile, name='profile'),
+    path('', views.health),
+    path('platinum/', lambda r: views.get_price_endpoint(r, 'platinum')),
+    path('oat/', lambda r: views.get_price_endpoint(r, 'oat')),
+    path('rough-rice/', lambda r: views.get_price_endpoint(r, 'rough_rice')),
+    path('micro-gold/', lambda r: views.get_price_endpoint(r, 'micro_gold')),
+    path('submit-price/', views.submit_price),
 ]

@@ -1,3 +1,4 @@
+import os
 from django.shortcuts import render, redirect
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
@@ -5,14 +6,14 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib import messages
 from .forms import SignupForm, LoginForm
 from .models import FavoriteCrop
+from django.http import JsonResponse
 import requests
 import json
-import os
 
+# AUTH & HOME
 def home(request):
     if request.method == 'GET' and 'crop' in request.GET:
         crop_name = request.GET.get('crop').strip()
-        print(f"Redirecting to crop: {crop_name}")
         return redirect('crop_price', crop_name=crop_name)
     return render(request, 'crops/home.html')
 
@@ -22,7 +23,6 @@ def crop_price(request, crop_name):
     
     # Map app commodities to API Ninjas symbols
     commodity_map = {
-        
         'rice': 'rough_rice',
         'soybeans': 'soybean_meal',
         'oats': 'oat',
@@ -34,41 +34,15 @@ def crop_price(request, crop_name):
         'barley': 'barley', 
         'wheat': 'wheat',
         'maize': 'corn',
-
     }
     api_symbol = commodity_map.get(crop_name.lower(), None)
     
     if not api_symbol:
         print(f"Invalid crop: {crop_name}")
-        messages.error(request, f'Crop "{crop_name}" not supported. Try wheat, maize, rice, etc.')
+        messages.error(request, f'Crop "{crop_name}" not supported.')
         return redirect('home')
 
-    # Mock historical data (2012–2016) for charts
-    mock_historical = {
-        'wheat': [
-            {'year': 2012, 'price': 210.50},
-            {'year': 2013, 'price': 195.30},
-            {'year': 2014, 'price': 190.10},
-            {'year': 2015, 'price': 185.00},
-            {'year': 2016, 'price': 180.23},
-        ],
-        'maize': [
-            {'year': 2012, 'price': 180.00},
-            {'year': 2013, 'price': 175.50},
-            {'year': 2014, 'price': 170.20},
-            {'year': 2015, 'price': 168.80},
-            {'year': 2016, 'price': 168.50},
-        ],
-        'rice': [
-            {'year': 2012, 'price': 450.00},
-            {'year': 2013, 'price': 440.00},
-            {'year': 2014, 'price': 435.00},
-            {'year': 2015, 'price': 430.00},
-            {'year': 2016, 'price': 428.00},
-        ],
-    }
-    
-    # Mock data for latest price and units (updated for 2025)
+    # Mock data fallback
     mock_data_map = {
         'wheat': {'value': 173.00, 'unit': 'USD per Metric Ton', 'year': 2025},
         'maize': {'value': 196.00, 'unit': 'USD per Metric Ton', 'year': 2025},
@@ -82,62 +56,86 @@ def crop_price(request, crop_name):
     }
     mock_info = mock_data_map.get(crop_name.lower(), {'value': 'N/A', 'unit': 'USD per unit', 'year': 'N/A'})
 
-    # Prepare chart data as JSON strings
+    # Historical mock data
+    mock_historical = {
+        'wheat': [ ... ],
+        'maize': [ ... ],
+        'rice': [ ... ],
+    }
     historical = mock_historical.get(crop_name.lower(), [])
     chart_labels = json.dumps([str(item['year']) for item in historical])
     chart_prices = json.dumps([item['price'] for item in historical])
 
-    # Try API Ninjas for live data
-    API_KEY = os.environ.get('API_NINJAS_KEY', 'lhEDnNdRq9Lzp/RrpayJXQ==l9wgeT0d3TN3tnQ7')
-    base_url = "https://api.api-ninjas.com/v1/commodityprice"
-    headers = {'X-Api-Key': API_KEY}
-    params = {'name': api_symbol}
-
-    try:
-        print(f"API URL: {base_url}?name={api_symbol}")
-        response = requests.get(base_url, params=params, headers=headers, timeout=10)
-        print(f"API response status: {response.status_code}")
-        print(f"API response body: {response.text}")
-        data = response.json()
-        
-        if response.status_code == 200 and 'price' in data and data.get('name'):
-            live_price = data['price']
-            live_unit = data.get('unit', mock_info['unit'])  # Fallback to mock unit
-            context = {
-                'crop': crop_name.capitalize(),
-                'value': live_price,
-                'unit': live_unit,
-                'display_year': 'Live (2025-10-19)',
-                'source': 'API Ninjas (Real-Time)',
-                'chart_labels': chart_labels,
-                'chart_prices': chart_prices,
-            }
-        else:
-            print(f"API failed, response: {data}")
-            messages.warning(request, f'Live data unavailable for {crop_name.capitalize()} - using mock data.')
-            context = {
-                'crop': crop_name.capitalize(),
-                'value': mock_info['value'],
-                'unit': mock_info['unit'],
-                'display_year': mock_info['year'],
-                'source': 'Mock Data (Updated 2025)',
-                'chart_labels': chart_labels,
-                'chart_prices': chart_prices,
-            }
-    except requests.RequestException as e:
-        print(f"API error: {type(e).__name__}: {str(e)}")
-        messages.warning(request, f'Live data unavailable for {crop_name.capitalize()} - using mock data.')
+    # Try API
+    API_KEY = os.getenv('API_NINJAS_KEY')
+    if not API_KEY:
+        messages.warning(request, "API key missing. Using mock data.")
         context = {
             'crop': crop_name.capitalize(),
             'value': mock_info['value'],
             'unit': mock_info['unit'],
             'display_year': mock_info['year'],
-            'source': 'Mock Data (Updated 2025)',
+            'source': 'Mock Data (No API Key)',
             'chart_labels': chart_labels,
             'chart_prices': chart_prices,
         }
-    
-    return render(request, 'crops/price.html', context)
+        return render(request, 'crops/price.html', context)
+
+    try:
+        response = requests.get(
+            "https://api.api-ninjas.com/v1/commodityprice",
+            params={'name': api_symbol},
+            headers={'X-Api-Key': API_KEY},
+            timeout=10
+        )
+        data = response.json()
+
+        if response.status_code == 200 and 'price' in data:
+            context = {
+                'crop': crop_name.capitalize(),
+                'value': data['price'],
+                'unit': data.get('unit', mock_info['unit']),
+                'display_year': 'Live',
+                'source': 'API Ninjas (Live)',
+                'chart_labels': chart_labels,
+                'chart_prices': chart_prices,
+            }
+        else:
+            messages.warning(request, f"Live data unavailable: {data.get('error', 'Unknown error')}")
+            context = {
+                'crop': crop_name.capitalize(),
+                'value': mock_info['value'],
+                'unit': mock_info['unit'],
+                'display_year': mock_info['year'],
+                'source': 'Mock Data (API Failed)',
+                'chart_labels': chart_labels,
+                'chart_prices': chart_prices,
+            }
+        return render(request, 'crops/price.html', context)
+
+    except requests.RequestException as e:
+        messages.warning(request, f"Connection error: {str(e)}. Using mock data.")
+        context = {
+            'crop': crop_name.capitalize(),
+            'value': mock_info['value'],
+            'unit': mock_info['unit'],
+            'display_year': mock_info['year'],
+            'source': 'Mock Data (Connection Failed)',
+            'chart_labels': chart_labels,
+            'chart_prices': chart_prices,
+        }
+        return render(request, 'crops/price.html', context)
+
+    # ← FINAL FALLBACK (in case of any weird case)
+    return render(request, 'crops/price.html', {
+        'crop': crop_name.capitalize(),
+        'value': 'N/A',
+        'unit': 'Error',
+        'display_year': 'N/A',
+        'source': 'Error',
+        'chart_labels': '[]',
+        'chart_prices': '[]',
+    })
 
 def signup(request):
     if request.method == 'POST':
@@ -145,7 +143,7 @@ def signup(request):
         if form.is_valid():
             user = form.save()
             username = form.cleaned_data.get('username')
-            messages.success(request, f'Account created for {username}! Please log in.')
+            messages.success(request, f'Account created for {username}!')
             return redirect('login')
     else:
         form = SignupForm()
@@ -169,3 +167,77 @@ def profile(request):
             messages.success(request, f'Added {crop_name} to favorites!')
         return redirect('profile')
     return render(request, 'crops/profile.html', {'favorites': favorites})
+
+# API ENDPOINTS (FREE COMMODITIES FROM API NINJAS)
+def health(request):
+    return JsonResponse({
+        "status": "ok",
+        "message": "Crop Price API is live!",
+        "free_commodities": ["platinum", "oat", "rough_rice", "micro_gold"],
+        "endpoints": [
+            "/api/platinum/",
+            "/api/oat/",
+            "/api/rough-rice/",
+            "/api/micro-gold/"
+        ]
+    })
+
+def get_price_endpoint(request, crop):
+    crop = crop.lower()
+    if crop not in ['platinum', 'oat', 'rough_rice', 'micro_gold']:
+        return JsonResponse({"error": "Free: platinum, oat, rough_rice, micro_gold"}, status=400)
+
+    API_KEY = os.getenv('API_NINJAS_KEY')  # Use env var
+    if not API_KEY:
+        return JsonResponse({"error": "API key missing"}, status=500)
+
+    try:
+        resp = requests.get(
+            "https://api.api-ninjas.com/v1/commodityprice",
+            params={'name': crop},
+            headers={'X-Api-Key': API_KEY},
+            timeout=10
+        )
+        data = resp.json()
+        
+        if resp.status_code == 200 and 'price' in data:
+            return JsonResponse({
+                "crop": crop,
+                "price": data['price'],
+                "unit": data.get('unit', 'USD'),
+                "source": "API Ninjas (Free Tier)"
+            })
+        else:
+            return JsonResponse({"error": data.get('error', 'API error')}, status=400)
+            
+    except Exception as e:
+        return JsonResponse({"error": f"Request failed: {str(e)}"}, status=500)
+    
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
+
+@csrf_exempt
+def submit_price(request):
+    if request.method != 'POST':
+        return JsonResponse({"error": "Use POST"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        crop = data.get('crop', '').lower()
+        price = data.get('price')
+
+        if crop not in ['platinum', 'oat', 'rough_rice', 'micro_gold']:
+            return JsonResponse({"error": "Invalid crop"}, status=400)
+        if not price or not isinstance(price, (int, float)):
+            return JsonResponse({"error": "Invalid price"}, status=400)
+
+        # Save to DB (create model later) or just return
+        return JsonResponse({
+            "message": "Price submitted!",
+            "crop": crop,
+            "price": price,
+            "status": "pending_review"
+        })
+    except:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
